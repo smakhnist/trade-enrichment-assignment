@@ -75,6 +75,14 @@ class TradeEnrichmentServiceApplicationTests {
         callOutputs.forEach(body -> assertActualIsExpected(body, "expected/trade.output.csv"));
     }
 
+    @ParameterizedTest
+    @EnumSource(RunType.class)
+    public void testEnrichmentEmptyInput(RunType runType) {
+        ResponseEntity<String> response = processFile(runType, "trade-empty.csv");
+        BDDAssertions.assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        BDDAssertions.assertThat(response.getBody()).isNotNull();
+        assertActualIsExpected(response.getBody(), "expected/trade-empty.output.csv");
+    }
 
     private static void assertActualIsExpected(String actualOutput, String expectedResourcePath) {
         var expectedContent = new Scanner(getClasspathResource(expectedResourcePath), StandardCharsets.UTF_8)

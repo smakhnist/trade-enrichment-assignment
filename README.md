@@ -24,7 +24,7 @@ See EfficientStructuresTradeEnrichmentService#processLine.isValidDate for impl d
 which performance is always O(n) and cut out only the necessary part of the line.
 See EfficientStructuresTradeEnrichmentService#processLine for impl details.
 
-#### 4. Quick (QuickTradeEnrichmentService) is the fastest solution and comprises all the above solutions optimizations (ReadWriteSplit, EfficientStructures)
+#### 4. Quick (QuickTradeEnrichmentService) is the fastest solution and comprises improvement techniques from both ReadWriteSplit, EfficientStructures solutions
 `curl POST --form file="@./trade.csv" -X POST http://localhost:8080/api/v1/enrich-quick`
 
 This solution gives us ~**450%** performance improvement compared to the naive version.
@@ -43,11 +43,14 @@ Below there is a summary of the results per each solution:
 | Quick (all in one)          | 218      | 480      | 378      | **+447%**               |
 
 
-# Test Coverage
-3 tests are ensuring the reliable work of each solution:
-- basic test asserting single-thread mode execution
-- test asserting input with invalid lines
-- thread-safety test asserting correct call handling in multi-thread mode
+# Tests running and coverage
 
 ### How to build jar and run tests
 `mvn clean install`
+
+### Use-case coverage
+4 tests are ensuring the reliable work of each solution:
+- basic test asserting single-thread mode execution
+- test asserting input with invalid lines
+- thread-safety test asserting correct call handling in multi-thread mode
+- empty file test asserting correct handling of empty input file
