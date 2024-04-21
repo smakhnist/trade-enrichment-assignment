@@ -34,7 +34,7 @@ public class QuickTradeEnrichmentService implements TradeEnrichmentService {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final ExecutorService consumerExecutorPool = Executors.newCachedThreadPool();
     private final ExecutorService producerExecutorPool = Executors.newCachedThreadPool();
-    private final ConcurrentHashMap.KeySetView<String, Boolean> dateValidationCache = ConcurrentHashMap.newKeySet();
+    private final ConcurrentHashMap.KeySetView<String, Boolean> dateValidationCache = ConcurrentHashMap.newKeySet();  // it's thread-safe
 
     @Override
     public void enrichTrades(InputStream tradeInputStream, PrintWriter printWriter) {
@@ -134,7 +134,7 @@ public class QuickTradeEnrichmentService implements TradeEnrichmentService {
                 if (line != null) {
                     writer.println(line);
                 } else {
-                    Thread.yield();
+                    Thread.yield(); // since the queue is empty at the moment, let the consumer thread capture the priority
                 }
             }
         }

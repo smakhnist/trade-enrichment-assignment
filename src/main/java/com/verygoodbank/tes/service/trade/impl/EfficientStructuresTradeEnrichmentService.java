@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EfficientStructuresTradeEnrichmentService implements TradeEnrichmentService {
     private final ProductService productService;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-    private final ConcurrentHashMap.KeySetView<String, Boolean> dateValidationCache = ConcurrentHashMap.newKeySet();
+    private final ConcurrentHashMap.KeySetView<String, Boolean> dateValidationCache = ConcurrentHashMap.newKeySet(); // it's thread-safe
 
     @Override
     public void enrichTrades(InputStream tradeInputStream, PrintWriter printWriter) {

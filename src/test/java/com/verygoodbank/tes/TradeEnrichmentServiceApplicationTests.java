@@ -47,7 +47,7 @@ class TradeEnrichmentServiceApplicationTests {
 
     @ParameterizedTest
     @EnumSource(RunType.class)
-    public void testEnrichmentCorruptedInput(RunType runType) {
+    public void testEnrichmentInputWithIllegalLines(RunType runType) {
         ResponseEntity<String> response = processFile(runType, "trade-with-corrupted-lines.csv");
         BDDAssertions.assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         BDDAssertions.assertThat(response.getBody()).isNotNull();
@@ -72,22 +72,20 @@ class TradeEnrichmentServiceApplicationTests {
         countDownLatch.await(3, TimeUnit.SECONDS);
 
         BDDAssertions.assertThat(callOutputs).hasSize(THREADS_NUMBER);
-
-        for (String body : callOutputs) {
-            assertActualIsExpected(body, "expected/trade.output.csv");
-        }
+        callOutputs.forEach(body -> assertActualIsExpected(body, "expected/trade.output.csv"));
     }
 
 
-    private static void assertActualIsExpected(String actual, String expectedResource) {
-        var expectedContent = new Scanner(getClasspathResource(expectedResource), StandardCharsets.UTF_8)
+    private static void assertActualIsExpected(String actualOutput, String expectedResourcePath) {
+        var expectedContent = new Scanner(getClasspathResource(expectedResourcePath), StandardCharsets.UTF_8)
                 .useDelimiter("\\A").next();
 
-        BDDAssertions.assertThat(actual.replace("\r\n", "\n"))
+        // just to make sure that the line endings are consistent (windows new line is \r\n, while unix is \n)
+        BDDAssertions.assertThat(actualOutput.replace("\r\n", "\n"))
                 .isEqualTo(expectedContent.replace("\r\n", "\n"));
     }
 
-    private ResponseEntity<String> processFile(RunType runType, String inputPath) {
+    private ResponseEntity<String> processFile(RunType runType, String inputResourcePath) {
         RestTemplate restTemplate = new RestTemplate();
 
         ContentDisposition contentDisposition = ContentDisposition.builder("form-data")
@@ -97,7 +95,7 @@ class TradeEnrichmentServiceApplicationTests {
 
         MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>(Map.of(HttpHeaders.CONTENT_DISPOSITION, List.of(contentDisposition.toString())));
 
-        InputStreamResource inputStreamResource = new InputStreamResource(getClasspathResource(inputPath));
+        InputStreamResource inputStreamResource = new InputStreamResource(getClasspathResource(inputResourcePath));
         HttpEntity<Resource> fileEntity = new HttpEntity<>(inputStreamResource, fileMap);
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>(Map.of("file", List.of(fileEntity)));
@@ -111,5 +109,4 @@ class TradeEnrichmentServiceApplicationTests {
     private static InputStream getClasspathResource(String classPath) {
         return TradeEnrichmentServiceApplicationTests.class.getClassLoader().getResourceAsStream(classPath);
     }
-
 }

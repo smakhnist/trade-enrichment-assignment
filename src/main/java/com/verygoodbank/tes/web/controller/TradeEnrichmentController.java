@@ -27,7 +27,6 @@ public class TradeEnrichmentController {
     private final EfficientStructuresTradeEnrichmentService efficientStructuresTradeEnrichmentService;
     private final QuickTradeEnrichmentService quickTradeEnrichmentService;
 
-
     @RequestMapping(value = "/enrich-naive", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")
     public void enrichNaive(HttpServletResponse response, @RequestParam("file") MultipartFile multipartFile) throws IOException {
         naiveTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());

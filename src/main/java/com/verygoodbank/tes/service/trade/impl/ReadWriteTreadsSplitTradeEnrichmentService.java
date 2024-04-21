@@ -126,7 +126,7 @@ public class ReadWriteTreadsSplitTradeEnrichmentService implements TradeEnrichme
                 if (line != null) {
                     writer.println(line);
                 } else {
-                    Thread.yield();
+                    Thread.yield(); // since the queue is empty at the moment, let the consumer thread capture the priority
                 }
             }
         }
