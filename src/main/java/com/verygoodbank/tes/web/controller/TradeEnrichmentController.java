@@ -4,7 +4,7 @@ package com.verygoodbank.tes.web.controller;
 import com.verygoodbank.tes.service.trade.impl.EfficientStructuresTradeEnrichmentService;
 import com.verygoodbank.tes.service.trade.impl.NaiveTradeEnrichmentService;
 import com.verygoodbank.tes.service.trade.impl.QuickTradeEnrichmentService;
-import com.verygoodbank.tes.service.trade.impl.ReadWriteTreadsSplitTradeEnrichmentService;
+import com.verygoodbank.tes.service.trade.impl.ReadWriteThreadsSplitTradeEnrichmentService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.io.IOException;
 @Slf4j
 public class TradeEnrichmentController {
     private final NaiveTradeEnrichmentService naiveTradeEnrichmentService;
-    private final ReadWriteTreadsSplitTradeEnrichmentService readWriteTreadsSplitTradeEnrichmentService;
+    private final ReadWriteThreadsSplitTradeEnrichmentService readWriteThreadsSplitTradeEnrichmentService;
     private final EfficientStructuresTradeEnrichmentService efficientStructuresTradeEnrichmentService;
     private final QuickTradeEnrichmentService quickTradeEnrichmentService;
 
@@ -34,7 +34,7 @@ public class TradeEnrichmentController {
 
     @RequestMapping(value = "/enrich-read-write-split", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")
     public void enrichTrade2Threads(HttpServletResponse response, @RequestParam("file") MultipartFile multipartFile) throws IOException {
-        readWriteTreadsSplitTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());
+        readWriteThreadsSplitTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());
     }
 
     @RequestMapping(value = "/enrich-efficient-structures", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")

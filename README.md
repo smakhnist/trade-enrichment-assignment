@@ -5,7 +5,7 @@
 
 `curl POST --form file="@./trade.csv" -X POST http://localhost:8080/api/v1/enrich-naive`
 
-#### 2. ReadWriteSplit (ReadWriteTreadsSplitTradeEnrichmentService) is an advanced version of Naive solution where we split read and write operations into separate threads
+#### 2. ReadWriteSplit (ReadWriteThreadsSplitTradeEnrichmentService) is an advanced version of Naive solution where we split read and write operations into separate threads
 `curl POST --form file="@./trade.csv" -X POST http://localhost:8080/api/v1/enrich-read-write-split`
 
 This solution gives us **> 100%** performance improvement in comparison with the naive version.

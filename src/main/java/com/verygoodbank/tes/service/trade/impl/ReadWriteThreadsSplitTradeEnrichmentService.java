@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReadWriteTreadsSplitTradeEnrichmentService implements TradeEnrichmentService {
+public class ReadWriteThreadsSplitTradeEnrichmentService implements TradeEnrichmentService {
     private final ProductService productService;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
     private final ExecutorService consumerExecutorPool = Executors.newCachedThreadPool();
