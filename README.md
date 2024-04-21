@@ -26,7 +26,7 @@ See EfficientStructuresTradeEnrichmentService#processLine for impl details.
 #### 4. Quick (QuickTradeEnrichmentService) is the fastest solution and comprises all the above solutions optimizations (ReadWriteSplit, EfficientStructures)
 `curl POST --form file="@./trade.csv" -X POST http://localhost:8080/api/v1/enrich-quick`
 
-This solution gives us **~ 450%** performance improvement in comparison to the naive version.
+This solution gives us ~**450%** performance improvement in comparison to the naive version.
 
 ### Statistics summary per each solution: 
 
