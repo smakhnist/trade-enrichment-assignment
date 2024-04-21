@@ -1,10 +1,11 @@
 # How to run the service
+`mvn spring-boot:run` - to start the spring-boot application
 
-#### 1. Naive (NaiveTradeEnrichmentService) version. Just make logic work
+#### 1. Naive (NaiveTradeEnrichmentService) version. The brute-force solution provides the desired functionality and sets the benchmark for the advanced solutions. 
 
 `curl POST --form file="@./trade.csv" -X POST http://localhost:8080/api/v1/enrich-naive`
 
-#### 2. ReadWriteSplit (ReadWriteTreadsSplitTradeEnrichmentService) is an advanced version where we split read and write operations to separate threads
+#### 2. ReadWriteSplit (ReadWriteTreadsSplitTradeEnrichmentService) is an advanced version of Naive solution where we split read and write operations to separate threads
 `curl POST --form file="@./trade.csv" -X POST http://localhost:8080/api/v1/enrich-read-write-split`
 
 This solution gives us **> 100%** performance improvement in comparison with the naive version.
@@ -16,10 +17,10 @@ This solution gives us **> 100%** performance improvement in comparison with the
 
 There are 2 improvements made into naive solution (**overall > 300% of performance increasing**). 
 
- - Since date validity check is pretty complex operation we could cache its valid values in tread-safe HashSet to avoid redundant date validations.
+ - Since date validity check is rather 'expensive' operation, we could cache its valid values in a tread-safe HashSet to avoid redundant date validations.
 The number of unique dates is relatively small, so the HashSet will be very efficient and memory-safe.
 See EfficientStructuresTradeEnrichmentService#processLine.isValidDate for impl details.
- - Slightly improved logic input lines parsing. Thus, we could avoid redundant string splitting operations
+ - Slightly improved logic of input lines parsing. Thus, we could avoid redundant string split operations
 which performance is always O(n) and cut out only the necessary part of the line.
 See EfficientStructuresTradeEnrichmentService#processLine for impl details.
 
