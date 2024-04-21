@@ -10,9 +10,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Default implementation of {@link ProductService}.
+ * Products are stored in HashMap ensuring O(1) access time,
+ * and String keys are used to ensure the best performance, not requiring Integer conversion on lines parse logic.
+ */
 @Service
 public class DefaultProductService implements ProductService {
-    private final Map<String, String> products; // yes, not Map<Integer, String> for efficiency
+    private final Map<String, String> products;
 
     public DefaultProductService() {
         try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(

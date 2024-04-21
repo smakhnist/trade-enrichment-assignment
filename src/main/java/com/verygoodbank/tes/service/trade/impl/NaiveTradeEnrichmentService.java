@@ -23,7 +23,7 @@ import java.util.Optional;
 @Slf4j
 public class NaiveTradeEnrichmentService implements TradeEnrichmentService {
     private final ProductService productService;
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd"); // DateTimeFormatter is thread-safe
 
     @Override
     public void enrichTrades(InputStream tradeInputStream, PrintWriter printWriter) {
