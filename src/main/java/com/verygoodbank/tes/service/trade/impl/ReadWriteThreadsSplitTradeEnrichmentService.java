@@ -37,7 +37,7 @@ public class ReadWriteThreadsSplitTradeEnrichmentService implements TradeEnrichm
     @Override
     public void enrichTrades(InputStream tradeInputStream, PrintWriter printWriter) {
         Queue<String> queue = new ConcurrentLinkedQueue<>();
-        Future<?> consumerThread = consumerExecutorPool.submit(new DataConsumer(queue, tradeInputStream, printWriter, this::processLine));
+        Future<?> consumerThread = consumerExecutorPool.submit(new DataConsumer(queue, tradeInputStream, this::processLine));
         Future<?> producerThread = producerExecutorPool.submit(new DataProducer(queue, printWriter, consumerThread::isDone));
         try {
             producerThread.get();
@@ -76,13 +76,11 @@ public class ReadWriteThreadsSplitTradeEnrichmentService implements TradeEnrichm
     private static class DataConsumer implements Runnable {
         private final Queue<String> queue;
         private final InputStream inputStream;
-        private final PrintWriter printWriter;
         private final Function<String, String> processLine;
 
-        public DataConsumer(Queue<String> queue, InputStream inputStream, PrintWriter printWriter, Function<String, String> processLine) {
+        public DataConsumer(Queue<String> queue, InputStream inputStream, Function<String, String> processLine) {
             this.queue = queue;
             this.inputStream = inputStream;
-            this.printWriter = printWriter;
             this.processLine = processLine;
         }
 
@@ -94,7 +92,7 @@ public class ReadWriteThreadsSplitTradeEnrichmentService implements TradeEnrichm
                 while ((line = bufferedReader.readLine()) != null) {
                     if (header) {
                         header = false;
-                        printWriter.println(line);
+                        queue.add(line);
                         continue;
                     }
                     String processedLine = processLine.apply(line);

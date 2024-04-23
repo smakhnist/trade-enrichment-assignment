@@ -39,7 +39,7 @@ public class QuickTradeEnrichmentService implements TradeEnrichmentService {
     @Override
     public void enrichTrades(InputStream tradeInputStream, PrintWriter printWriter) {
         Queue<String> queue = new ConcurrentLinkedQueue<>();
-        Future<?> consumerThread = consumerExecutorPool.submit(new QuickTradeEnrichmentService.DataConsumer(queue, tradeInputStream, printWriter, this::processLine));
+        Future<?> consumerThread = consumerExecutorPool.submit(new QuickTradeEnrichmentService.DataConsumer(queue, tradeInputStream, this::processLine));
         Future<?> producerThread = producerExecutorPool.submit(new QuickTradeEnrichmentService.DataProducer(queue, printWriter, consumerThread::isDone));
         try {
             producerThread.get();
@@ -84,13 +84,11 @@ public class QuickTradeEnrichmentService implements TradeEnrichmentService {
     private static class DataConsumer implements Runnable {
         private final Queue<String> queue;
         private final InputStream inputStream;
-        private final PrintWriter printWriter;
         private final Function<String, String> processLine;
 
-        public DataConsumer(Queue<String> queue, InputStream inputStream, PrintWriter printWriter, Function<String, String> processLine) {
+        public DataConsumer(Queue<String> queue, InputStream inputStream, Function<String, String> processLine) {
             this.queue = queue;
             this.inputStream = inputStream;
-            this.printWriter = printWriter;
             this.processLine = processLine;
         }
 
@@ -102,7 +100,7 @@ public class QuickTradeEnrichmentService implements TradeEnrichmentService {
                 while ((line = bufferedReader.readLine()) != null) {
                     if (header) {
                         header = false;
-                        printWriter.println(line);
+                        queue.add(line);  // add the header to the queue
                         continue;
                     }
                     String processedLine = processLine.apply(line);
