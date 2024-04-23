@@ -100,7 +100,7 @@ public class QuickTradeEnrichmentService implements TradeEnrichmentService {
                 while ((line = bufferedReader.readLine()) != null) {
                     if (header) {
                         header = false;
-                        queue.add(line);  // add the header to the queue
+                        queue.add(line);
                         continue;
                     }
                     String processedLine = processLine.apply(line);
