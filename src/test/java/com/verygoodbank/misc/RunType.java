@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum RunType {
     NAIVE("http://localhost:{port}/api/v1/enrich-naive"),
-    READ_WRITE_SPLIT("http://localhost:{port}/api/v1/enrich-read-write-split"),
+    DF_THREAD_LOCAL("http://localhost:{port}/api/v1/enrich-df-thread-local"),
     EFFICIENT_STRUCTURES("http://localhost:{port}/api/v1/enrich-efficient-structures"),
-    QUICK_ALL_IN_ONE("http://localhost:{port}/api/v1/enrich-quick");
+    READ_WRITE_SPLIT("http://localhost:{port}/api/v1/enrich-threads-split");
 
     private final String path;
 

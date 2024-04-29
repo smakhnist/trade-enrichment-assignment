@@ -16,15 +16,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class EfficientStructuresTradeEnrichmentService implements TradeEnrichmentService {
+public class ThreadLocalDateFormaterTradeEnrichmentService implements TradeEnrichmentService {
     private final ProductService productService;
-    private final ThreadLocal<DateTimeFormatter> dateFormatterTH = new ThreadLocal<>();
-    private final ConcurrentHashMap.KeySetView<String, Boolean> dateValidationCache = ConcurrentHashMap.newKeySet(); // it's thread-safe
+    private final ThreadLocal<DateTimeFormatter> dateFormatterTH = new ThreadLocal<>(); // DateTimeFormatter is thread-safe
 
     @Override
     public void enrichTrades(InputStream tradeInputStream, PrintWriter printWriter) {
@@ -50,16 +48,15 @@ public class EfficientStructuresTradeEnrichmentService implements TradeEnrichmen
 
     private String processLine(String line) {
         try {
-            int firstCommaIdx = line.indexOf(',');
-            int secondCommaIdx = line.indexOf(',', firstCommaIdx + 1);
-            String productId = line.substring(firstCommaIdx + 1, secondCommaIdx);
+            String[] columns = line.split(",");
+            String productId = columns[1];
             String productName = Optional.ofNullable(productService.getProductName(productId)).orElse("Missing Product Name");
 
-            String dateAsString = line.substring(0, firstCommaIdx);
+            String dateAsString = columns[0];
             if (!isValidDate(dateAsString)) {
                 return null;
             }
-            return String.join(",", dateAsString, productName, line.substring(secondCommaIdx + 1));
+            return String.join(",", columns[0], productName, columns[2], columns[3]);
         } catch (Exception e) {
             log.error("Error processing line: {}", line, e);
             return null;
@@ -67,21 +64,16 @@ public class EfficientStructuresTradeEnrichmentService implements TradeEnrichmen
     }
 
     private boolean isValidDate(String dateStr) {
-        if (dateValidationCache.contains(dateStr)) {
+        try {
+            Optional.ofNullable(dateFormatterTH.get()).orElseGet(() -> {
+                DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyyMMdd");
+                dateFormatterTH.set(formatter1);
+                return formatter1;
+            }).parse(dateStr);
             return true;
-        } else {
-            try {
-                Optional.ofNullable(dateFormatterTH.get()).orElseGet(() -> {
-                    DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyyMMdd");
-                    dateFormatterTH.set(formatter1);
-                    return formatter1;
-                }).parse(dateStr);
-                dateValidationCache.add(dateStr);
-                return true;
-            } catch (DateTimeParseException e) {
-                log.error("Invalid date format: {}", dateStr);
-                return false;
-            }
+        } catch (DateTimeParseException e) {
+            log.error("Invalid date: {}", dateStr);
+            return false;
         }
     }
 }

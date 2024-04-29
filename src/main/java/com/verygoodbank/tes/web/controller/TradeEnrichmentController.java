@@ -3,8 +3,8 @@ package com.verygoodbank.tes.web.controller;
 
 import com.verygoodbank.tes.service.trade.impl.EfficientStructuresTradeEnrichmentService;
 import com.verygoodbank.tes.service.trade.impl.NaiveTradeEnrichmentService;
-import com.verygoodbank.tes.service.trade.impl.QuickTradeEnrichmentService;
-import com.verygoodbank.tes.service.trade.impl.ReadWriteThreadsSplitTradeEnrichmentService;
+import com.verygoodbank.tes.service.trade.impl.ThreadLocalDateFormaterTradeEnrichmentService;
+import com.verygoodbank.tes.service.trade.impl.ThreadsSplitTradeEnrichmentService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,18 +23,18 @@ import java.io.IOException;
 @Slf4j
 public class TradeEnrichmentController {
     private final NaiveTradeEnrichmentService naiveTradeEnrichmentService;
-    private final ReadWriteThreadsSplitTradeEnrichmentService readWriteThreadsSplitTradeEnrichmentService;
+    private final ThreadLocalDateFormaterTradeEnrichmentService threadLocalDateFormaterTradeEnrichmentService;
     private final EfficientStructuresTradeEnrichmentService efficientStructuresTradeEnrichmentService;
-    private final QuickTradeEnrichmentService quickTradeEnrichmentService;
+    private final ThreadsSplitTradeEnrichmentService threadsSplitTradeEnrichmentService;
 
     @RequestMapping(value = "/enrich-naive", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")
     public void enrichNaive(HttpServletResponse response, @RequestParam("file") MultipartFile multipartFile) throws IOException {
         naiveTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());
     }
 
-    @RequestMapping(value = "/enrich-read-write-split", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")
-    public void enrichTrade2Threads(HttpServletResponse response, @RequestParam("file") MultipartFile multipartFile) throws IOException {
-        readWriteThreadsSplitTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());
+    @RequestMapping(value = "/enrich-df-thread-local", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")
+    public void enrichNaive2(HttpServletResponse response, @RequestParam("file") MultipartFile multipartFile) throws IOException {
+        threadLocalDateFormaterTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());
     }
 
     @RequestMapping(value = "/enrich-efficient-structures", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")
@@ -42,9 +42,9 @@ public class TradeEnrichmentController {
         efficientStructuresTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());
     }
 
-    @RequestMapping(value = "/enrich-quick", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")
+    @RequestMapping(value = "/enrich-threads-split", method = RequestMethod.POST, produces = "text/csv", consumes = "multipart/form-data")
     public void enrichQuick(HttpServletResponse response, @RequestParam("file") MultipartFile multipartFile) throws IOException {
-        quickTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());
+        threadsSplitTradeEnrichmentService.enrichTrades(multipartFile.getInputStream(), response.getWriter());
     }
 
     @GetMapping("/echo")

@@ -13,7 +13,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Optional;
@@ -29,9 +28,9 @@ import java.util.function.Supplier;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class QuickTradeEnrichmentService implements TradeEnrichmentService {
+public class ThreadsSplitTradeEnrichmentService implements TradeEnrichmentService {
     private final ProductService productService;
-    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private final ThreadLocal<DateTimeFormatter> dateFormatterTH = new ThreadLocal<>();
     private final ExecutorService consumerExecutorPool = Executors.newCachedThreadPool();
     private final ExecutorService producerExecutorPool = Executors.newCachedThreadPool();
     private final ConcurrentHashMap.KeySetView<String, Boolean> dateValidationCache = ConcurrentHashMap.newKeySet();  // it's thread-safe
@@ -39,8 +38,8 @@ public class QuickTradeEnrichmentService implements TradeEnrichmentService {
     @Override
     public void enrichTrades(InputStream tradeInputStream, PrintWriter printWriter) {
         Queue<String> queue = new ConcurrentLinkedQueue<>();
-        Future<?> consumerThread = consumerExecutorPool.submit(new QuickTradeEnrichmentService.DataConsumer(queue, tradeInputStream, this::processLine));
-        Future<?> producerThread = producerExecutorPool.submit(new QuickTradeEnrichmentService.DataProducer(queue, printWriter, consumerThread::isDone));
+        Future<?> consumerThread = consumerExecutorPool.submit(new ThreadsSplitTradeEnrichmentService.DataConsumer(queue, tradeInputStream, this::processLine));
+        Future<?> producerThread = producerExecutorPool.submit(new ThreadsSplitTradeEnrichmentService.DataProducer(queue, printWriter, consumerThread::isDone));
         try {
             producerThread.get();
         } catch (Exception e) {
@@ -71,7 +70,11 @@ public class QuickTradeEnrichmentService implements TradeEnrichmentService {
             return true;
         } else {
             try {
-                LocalDate.parse(dateStr, dateFormatter);
+                Optional.ofNullable(dateFormatterTH.get()).orElseGet(() -> {
+                    DateTimeFormatter formatter1 = DateTimeFormatter.ofPattern("yyyyMMdd");
+                    dateFormatterTH.set(formatter1);
+                    return formatter1;
+                }).parse(dateStr);
                 dateValidationCache.add(dateStr);
                 return true;
             } catch (DateTimeParseException e) {
