@@ -49,7 +49,7 @@ public class TradeEnrichmentController {
 
     @GetMapping("/echo")
     public String echo() {
-        return "Hello World!";
+        return "Hello New World!!!";
     }
 }
 
