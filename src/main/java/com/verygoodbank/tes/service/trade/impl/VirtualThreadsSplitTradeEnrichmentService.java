@@ -130,7 +130,7 @@ public class VirtualThreadsSplitTradeEnrichmentService implements TradeEnrichmen
 
         @Override
         public void run() {
-            while (!consumerDoneChecker.get()) {
+            while (!consumerDoneChecker.get() || !queue.isEmpty()) {
                 String line = queue.poll();
                 if (line != null) {
                     writer.println(line);
