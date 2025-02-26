@@ -1,6 +1,7 @@
 package com.verygoodbank.tes;
 
-import com.verygoodbank.misc.RunType;
+import com.verygoodbank.misc.Util;
+import com.verygoodbank.tes.service.trade.SolutionType;
 import org.assertj.core.api.BDDAssertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -37,8 +38,8 @@ class TradeEnrichmentServiceApplicationTests {
     int randomServerPort;
 
     @ParameterizedTest
-    @EnumSource(RunType.class)
-    public void testTradeEnrichment(RunType runType) {
+    @EnumSource(SolutionType.class)
+    public void testTradeEnrichment(SolutionType runType) {
         ResponseEntity<String> response = processFile(runType, "trade.csv");
         BDDAssertions.assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         BDDAssertions.assertThat(response.getBody()).isNotNull();
@@ -46,8 +47,8 @@ class TradeEnrichmentServiceApplicationTests {
     }
 
     @ParameterizedTest
-    @EnumSource(RunType.class)
-    public void testEnrichmentInputWithIllegalLines(RunType runType) {
+    @EnumSource(SolutionType.class)
+    public void testEnrichmentInputWithIllegalLines(SolutionType runType) {
         ResponseEntity<String> response = processFile(runType, "trade-with-corrupted-lines.csv");
         BDDAssertions.assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         BDDAssertions.assertThat(response.getBody()).isNotNull();
@@ -55,8 +56,8 @@ class TradeEnrichmentServiceApplicationTests {
     }
 
     @ParameterizedTest
-    @EnumSource(RunType.class)
-    public void testEnsureThreadSafety(RunType runType) throws InterruptedException {
+    @EnumSource(SolutionType.class)
+    public void testEnsureThreadSafety(SolutionType runType) throws InterruptedException {
         final int THREADS_NUMBER = 20;
         ExecutorService executorService = Executors.newFixedThreadPool(THREADS_NUMBER);
         CountDownLatch countDownLatch = new CountDownLatch(THREADS_NUMBER);
@@ -76,8 +77,8 @@ class TradeEnrichmentServiceApplicationTests {
     }
 
     @ParameterizedTest
-    @EnumSource(RunType.class)
-    public void testEnrichmentEmptyInput(RunType runType) {
+    @EnumSource(SolutionType.class)
+    public void testEnrichmentEmptyInput(SolutionType runType) {
         ResponseEntity<String> response = processFile(runType, "trade-empty.csv");
         BDDAssertions.assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         BDDAssertions.assertThat(response.getBody()).isNotNull();
@@ -93,7 +94,7 @@ class TradeEnrichmentServiceApplicationTests {
                 .isEqualTo(expectedContent.replace("\r\n", "\n"));
     }
 
-    private ResponseEntity<String> processFile(RunType runType, String inputResourcePath) {
+    private ResponseEntity<String> processFile(SolutionType runType, String inputResourcePath) {
         RestTemplate restTemplate = new RestTemplate();
 
         ContentDisposition contentDisposition = ContentDisposition.builder("form-data")
@@ -111,7 +112,7 @@ class TradeEnrichmentServiceApplicationTests {
         HttpHeaders headers = new HttpHeaders(new LinkedMultiValueMap<>(Map.of(HttpHeaders.CONTENT_TYPE, List.of(MediaType.MULTIPART_FORM_DATA_VALUE))));
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-        return restTemplate.exchange(runType.getPath(randomServerPort), HttpMethod.POST, requestEntity, String.class);
+        return restTemplate.exchange(Util.getPath(runType, randomServerPort), HttpMethod.POST, requestEntity, String.class);
     }
 
     private static InputStream getClasspathResource(String classPath) {

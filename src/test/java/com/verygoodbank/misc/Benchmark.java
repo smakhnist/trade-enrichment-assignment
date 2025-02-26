@@ -1,5 +1,6 @@
 package com.verygoodbank.misc;
 
+import com.verygoodbank.tes.service.trade.SolutionType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 @Slf4j
 public class Benchmark {
@@ -31,11 +33,15 @@ public class Benchmark {
     private static final int SERVER_PORT = 8080;
 
     public static void main(String[] args) {
-        final int THREADS_NUMBER = 20;
+        final int THREADS_NUMBER = 50;
         final String FILE_PATH = "medium-trade-file.csv";
-        final RunType[] runTypes = RunType.values();
+        final Stream<SolutionType> runTypes = Stream.of(SolutionType.Naive,
+                                SolutionType.ThreadLocalDateFormatter,
+                                SolutionType.EfficientStructures,
+                                SolutionType.ThreadSplit,
+                                SolutionType.VirtualThreadSleep);
 
-        Arrays.stream(runTypes).forEach(runType -> {
+        runTypes.forEach(runType -> {
             try {
                 List<Long> respTimes = runForType(THREADS_NUMBER, FILE_PATH, runType);
                 System.out.printf("%s - %s%n", runType, respTimes.stream().mapToLong(Long::longValue).summaryStatistics());
@@ -45,7 +51,7 @@ public class Benchmark {
         });
     }
 
-    private static List<Long> runForType(int THREADS_NUMBER, String FILE_PATH, RunType runType) throws InterruptedException {
+    private static List<Long> runForType(int THREADS_NUMBER, String FILE_PATH, SolutionType runType) throws InterruptedException {
         ExecutorService executorService = Executors.newFixedThreadPool(THREADS_NUMBER);
 
         CountDownLatch countDownLatch = new CountDownLatch(THREADS_NUMBER);
@@ -69,7 +75,7 @@ public class Benchmark {
         return respTimes;
     }
 
-    private static ResponseEntity<String> processFile(File file, RunType runType) throws FileNotFoundException {
+    private static ResponseEntity<String> processFile(File file, SolutionType solutionType) throws FileNotFoundException {
         RestTemplate restTemplate = new RestTemplate();
 
         ContentDisposition contentDisposition = ContentDisposition.builder("form-data")
@@ -86,6 +92,6 @@ public class Benchmark {
         HttpHeaders headers = new HttpHeaders(new LinkedMultiValueMap<>(Map.of(HttpHeaders.CONTENT_TYPE, List.of(MediaType.MULTIPART_FORM_DATA_VALUE))));
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-        return restTemplate.exchange(runType.getPath(SERVER_PORT), HttpMethod.POST, requestEntity, String.class);
+        return restTemplate.exchange(Util.getPath(solutionType, SERVER_PORT), HttpMethod.POST, requestEntity, String.class);
     }
 }

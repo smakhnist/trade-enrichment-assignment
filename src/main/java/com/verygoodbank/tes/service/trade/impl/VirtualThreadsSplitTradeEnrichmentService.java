@@ -28,18 +28,18 @@ import java.util.function.Supplier;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ThreadsSplitTradeEnrichmentService implements TradeEnrichmentService {
+public class VirtualThreadsSplitTradeEnrichmentService implements TradeEnrichmentService {
     private final ProductService productService;
     private final ThreadLocal<DateTimeFormatter> dateFormatterTH = new ThreadLocal<>();
-    private final ExecutorService consumerExecutorPool = Executors.newCachedThreadPool();
-    private final ExecutorService producerExecutorPool = Executors.newCachedThreadPool();
+    private final ExecutorService consumerExecutorPool = Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService producerExecutorPool = Executors.newVirtualThreadPerTaskExecutor();
     private final ConcurrentHashMap.KeySetView<String, Boolean> dateValidationCache = ConcurrentHashMap.newKeySet();  // it's thread-safe
 
     @Override
     public void enrichTrades(InputStream tradeInputStream, PrintWriter printWriter) {
         Queue<String> queue = new ConcurrentLinkedQueue<>();
-        Future<?> consumerThread = consumerExecutorPool.submit(new ThreadsSplitTradeEnrichmentService.DataConsumer(queue, tradeInputStream, this::processLine));
-        Future<?> producerThread = producerExecutorPool.submit(new ThreadsSplitTradeEnrichmentService.DataProducer(queue, printWriter, consumerThread::isDone));
+        Future<?> consumerThread = consumerExecutorPool.submit(new VirtualThreadsSplitTradeEnrichmentService.DataConsumer(queue, tradeInputStream, this::processLine));
+        Future<?> producerThread = producerExecutorPool.submit(new VirtualThreadsSplitTradeEnrichmentService.DataProducer(queue, printWriter, consumerThread::isDone));
         try {
             producerThread.get();
         } catch (Exception e) {
@@ -130,7 +130,7 @@ public class ThreadsSplitTradeEnrichmentService implements TradeEnrichmentServic
 
         @Override
         public void run() {
-            while (!consumerDoneChecker.get() || !queue.isEmpty()) {
+            while (!consumerDoneChecker.get()) {
                 String line = queue.poll();
                 if (line != null) {
                     writer.println(line);

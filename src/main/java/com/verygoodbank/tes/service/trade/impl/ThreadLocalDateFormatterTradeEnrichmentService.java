@@ -20,7 +20,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ThreadLocalDateFormaterTradeEnrichmentService implements TradeEnrichmentService {
+public class ThreadLocalDateFormatterTradeEnrichmentService implements TradeEnrichmentService {
     private final ProductService productService;
     private final ThreadLocal<DateTimeFormatter> dateFormatterTH = new ThreadLocal<>(); // DateTimeFormatter is thread-safe
 
