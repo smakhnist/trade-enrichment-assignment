@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,13 +32,9 @@ public class Benchmark {
     private static final int SERVER_PORT = 8080;
 
     public static void main(String[] args) {
-        final int THREADS_NUMBER = 50;
+        final int THREADS_NUMBER = 20;
         final String FILE_PATH = "medium-trade-file.csv";
-        final Stream<SolutionType> runTypes = Stream.of(SolutionType.Naive,
-                                SolutionType.ThreadLocalDateFormatter,
-                                SolutionType.EfficientStructures,
-                                SolutionType.ThreadSplit,
-                                SolutionType.VirtualThreadSleep);
+        final Stream<SolutionType> runTypes = Stream.of(SolutionType.values());
 
         runTypes.forEach(runType -> {
             try {
